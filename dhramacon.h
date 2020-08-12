@@ -7,12 +7,15 @@
 #include <vector>
 #include <math.h>
 #include <dirent.h>
-#include "contants.h"
+#define HEIGHT 14
+#define WIDTH  24
 
 #ifndef DNA_NAMING_DHRAMACON_H
-#define DNA_NAMING_DHRAMACON_H
-
+    #define DNA_NAMING_DHRAMACON_H
 #endif //DNA_NAMING_DHRAMACON_H
+
+
+
 using namespace std;
 typedef vector< vector<string> > csvVector;
 
@@ -36,6 +39,9 @@ int processFolder(string const & dirname);
 
 void decodePosition(string const & filename, string & dnaCode, string & concentration);
 
+int** getTable();
+
+void printTable(int** const & table);
 
 float s2f(string const & floatstring){
     std::string::size_type sz;     // alias of size_t
@@ -209,11 +215,75 @@ int processFolder(string const & dirname){
 
 
 void decodePosition(string const & filename, string & dnaCode, string & concentration) {
-    string code = filename.substr(filename.find("_"), filename.find("--") - filename.find("_"));
-    int abscissa = static_cast<unsigned char>( code[0] );
-    abscissa -=65;
-    int ordenada = std::stoi(code.substr(1, code.size()-1));
-    int codeLayout = LAYOUT[abscissa][ordenada];
-    dnaCode = std::to_string(codeLayout / 100);
-    concentration = std::to_string(codeLayout % 100);
+    try{
+        string code = filename.substr(filename.find("_")+1, filename.find("--") - filename.find("_")-1);
+        int abscissa = static_cast<unsigned char>( code[0] );
+        abscissa -=65;
+        string aaa = code.substr(1, code.size() - 1);
+        int ordinate = std::stoi(aaa)-1;
+        int** layout = getTable();
+        int codeLayout = layout[abscissa][ordinate]; //layout[abscissa][ordinate];
+        int bbb = codeLayout / 100;
+        dnaCode = std::to_string(bbb);
+        int ccc = codeLayout % 100;
+        concentration = std::to_string(ccc);
+
+    } catch (const std::exception &exc) {
+        // catch anything thrown within try block that derives from std::exception
+        concentration = "NAN";
+        dnaCode = "NAN";
+        std::cerr << "Exception occured during generation of code from filename OCCURRED : "<<  exc.what() << endl;
+    } catch(...){
+        concentration = "NAN";
+        dnaCode = "NAN";
+        std::cerr << "exception during generation of code from filename " << endl;
+    }
+}
+
+
+int** getTable() {
+    int** dharmaconTable = 0;
+
+    dharmaconTable = new int*[HEIGHT];
+
+    int cellCount = 1;
+    int densities[3] = {3000, 1000, 300}, *d;
+    d = densities;
+
+    // init table with zeros
+    for (int h = 0; h < HEIGHT; h++){
+        dharmaconTable[h] = new int[WIDTH];
+        for(int w = 0; w < WIDTH; w++)
+            dharmaconTable[h][w] = 0;
+    }
+
+    for (int h = 0; h < HEIGHT; h++) {
+        for (int w = 0; w < WIDTH; w++) {
+            if (cellCount < 23) {
+                if (h > 1 and h % 2 == 0) {
+                    if (w > 1 and w % 2 == 0) {
+                        dharmaconTable[h][w] = cellCount + *d;
+                        dharmaconTable[h + 1][w] = cellCount + *d;
+                        dharmaconTable[h][w + 1] = cellCount + *d;
+                        cellCount++;
+                    }
+                }
+            } else {
+                cellCount = 1;
+                d++;
+            }
+        }
+    }
+
+    return dharmaconTable;
+}
+
+
+void printTable(int** const & table){
+    for (int i=0; i<HEIGHT; i++){
+        for (int j=0; j<WIDTH; j++)
+            std::cout << table[i][j] << "\t";
+        std::cout <<";\n";
+    }
+
 }
