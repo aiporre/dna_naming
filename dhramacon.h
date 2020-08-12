@@ -7,13 +7,12 @@
 #include <vector>
 #include <math.h>
 #include <dirent.h>
+#include "contants.h"
 
 #ifndef DNA_NAMING_DHRAMACON_H
 #define DNA_NAMING_DHRAMACON_H
 
 #endif //DNA_NAMING_DHRAMACON_H
-#define HEIGHT 14
-#define WIDTH  24
 using namespace std;
 typedef vector< vector<string> > csvVector;
 
@@ -35,53 +34,8 @@ inline bool ends_with(std::string const & value, std::string const & ending);
 
 int processFolder(string const & dirname);
 
+void decodePosition(string const & filename, string & dnaCode, string & concentration);
 
-int** getTable() {
-    int** dharmaconTable = 0;
-
-    dharmaconTable = new int*[HEIGHT];
-
-    int cellCount = 1;
-    int densities[3] = {3000, 1000, 300}, *d;
-    d = densities;
-
-    // init table with zeros
-    for (int h = 0; h < HEIGHT; h++){
-        dharmaconTable[h] = new int[WIDTH];
-        for(int w = 0; w < WIDTH; w++)
-            dharmaconTable[h][w] = 0;
-    }
-
-    for (int h = 0; h < HEIGHT; h++) {
-        for (int w = 0; w < WIDTH; w++) {
-            if (cellCount < 23) {
-                if (h > 1 and h % 2 == 0) {
-                    if (w > 1 and w % 2 == 0) {
-                        dharmaconTable[h][w] = cellCount + *d;
-                        dharmaconTable[h + 1][w] = cellCount + *d;
-                        dharmaconTable[h][w + 1] = cellCount + *d;
-                        cellCount++;
-                    }
-                }
-            } else {
-                cellCount = 1;
-                d++;
-            }
-        }
-    }
-
-    return dharmaconTable;
-}
-
-
-void printTable(int** const & table){
-    for (int i=0; i<HEIGHT; i++){
-        for (int j=0; j<WIDTH; j++)
-            cout << table[i][j] << "\t";
-        cout <<";\n";
-    }
-
-}
 
 float s2f(string const & floatstring){
     std::string::size_type sz;     // alias of size_t
@@ -101,6 +55,8 @@ void averageSubTables(csvVector &input, csvVector &output){
     header.push_back("% MeanInt GPF");
     header.push_back("% MeanInt Cy3");
     header.push_back("% DAPI Area");
+    header.push_back("% concentration");
+    header.push_back("% DNA code");
     output.push_back(header);
     for(csvVector::iterator i = input.begin(); i != input.end(); ++i)
     {
@@ -127,6 +83,11 @@ void averageSubTables(csvVector &input, csvVector &output){
                 csvColumn.push_back( to_string(meanIntensityGPF/nzRowCounter));
                 csvColumn.push_back(to_string(meanIntensityCy3/nzRowCounter));
                 csvColumn.push_back(to_string(dapiArea/nzRowCounter));
+                string concentration;
+                string dnaCode;
+                decodePosition(filename, concentration, dnaCode);
+                csvColumn.push_back(concentration);
+                csvColumn.push_back(dnaCode);
                 // append new row to table
                 output.push_back(csvColumn);
                 // reset row counters and accumulatior
@@ -244,4 +205,15 @@ int processFolder(string const & dirname){
         return 1;
     }
     return 0;
+}
+
+
+void decodePosition(string const & filename, string & dnaCode, string & concentration) {
+    string code = filename.substr(filename.find("_"), filename.find("--") - filename.find("_"));
+    int abscissa = static_cast<unsigned char>( code[0] );
+    abscissa -=65;
+    int ordenada = std::stoi(code.substr(1, code.size()-1));
+    int codeLayout = LAYOUT[abscissa][ordenada];
+    dnaCode = std::to_string(codeLayout / 100);
+    concentration = std::to_string(codeLayout % 100);
 }
