@@ -14,6 +14,12 @@
     #define DNA_NAMING_DHRAMACON_H
 #endif //DNA_NAMING_DHRAMACON_H
 
+//#if _MSC_VER
+//    #define getcwd _getcwd
+//#elif defined(__GNUC__)
+//    #include <unistd.h>
+//#endif
+
 
 
 using namespace std;
@@ -42,6 +48,9 @@ void decodePosition(string const & filename, string & dnaCode, string & concentr
 int** getTable();
 
 void printTable(int** const & table);
+
+string getCurrentWorkingDir();
+bool directoryExists(string const & dir);
 
 float s2f(string const & floatstring){
     std::string::size_type sz;     // alias of size_t
@@ -286,4 +295,30 @@ void printTable(int** const & table){
         std::cout <<";\n";
     }
 
+}
+
+
+string getCurrentWorkingDir(){
+    char* buffer;
+    string working_directory;
+    if( (buffer=getcwd(nullptr, 0)) == nullptr) {
+        perror("failed to get current directory\n");
+        return "";
+    } else {
+        working_directory = buffer;
+        free(buffer);
+    }
+
+    return working_directory;
+}
+
+bool directoryExists(string const & dir){
+    DIR* dirVar = opendir(dir.c_str());
+    if (dirVar) {
+        /* Directory exists. */
+        closedir(dirVar);
+        return true;
+    } else {
+        return false;
+    }
 }
