@@ -12,5 +12,5 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-add_executable(dna_naming wizard.cpp dhramacon.h wizardqt.cpp)
+add_executable(dna_naming wizard.cpp dhramacon.h)
 target_link_libraries(dna_naming Qt5::Widgets Qt5::Core)
