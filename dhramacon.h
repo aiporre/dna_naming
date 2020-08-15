@@ -14,11 +14,13 @@
     #define DNA_NAMING_DHRAMACON_H
 #endif //DNA_NAMING_DHRAMACON_H
 
-//#if _MSC_VER
-//    #define getcwd _getcwd
-//#elif defined(__GNUC__)
-//    #include <unistd.h>
-//#endif
+#if defined(_MSC_VER)
+    #define WIN32 true
+    #define getcwd _getcwd
+#elif defined(__GNUC__)
+    #define WIN32 false
+    #include <unistd.h>
+#endif
 
 
 
@@ -79,7 +81,7 @@ void averageSubTables(csvVector &input, csvVector &output){
             skipFirst = false;
             continue;
         }
-        if (i->size()>0){
+        if (i->size()==6){
             float valueIntesityGPF = s2f(i->at(2));
             float valueIntensityCy3 = s2f(i->at(3));
             float valueDapiArea = s2f(i->at(4));

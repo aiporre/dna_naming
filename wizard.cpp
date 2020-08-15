@@ -11,7 +11,7 @@
      // Process folder
      std::string folderName = argv[1];
      // validate folder
-     if(_WIN32){
+     if(WIN32){
          if (folderName.find(":\\") == std::string::npos){
              std::string cwd = getCurrentWorkingDir();
              std::cout << "CWD: " << cwd << std::endl;
@@ -20,6 +20,16 @@
          if(!directoryExists(folderName)){
              std::cerr << "Folder " << folderName << " doesn't exists" << std::endl;
             return 1;
+         }
+     } else{
+         if (not (folderName.rfind("/", 0) == 0)){
+             std::string cwd = getCurrentWorkingDir();
+             std::cout << "CWD: " << cwd << std::endl;
+             folderName = cwd + "/" + folderName;
+         }
+         if(!directoryExists(folderName)){
+             std::cerr << "Folder " << folderName << " doesn't exists" << std::endl;
+             return 1;
          }
      }
      processFolder(folderName);
