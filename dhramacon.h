@@ -14,6 +14,14 @@
     #define DNA_NAMING_DHRAMACON_H
 #endif //DNA_NAMING_DHRAMACON_H
 
+#if defined(_MSC_VER)
+    #define WIN32 true
+    #define getcwd _getcwd
+#elif defined(__GNUC__)
+    #define WIN32 false
+    #include <unistd.h>
+#endif
+
 
 
 using namespace std;
@@ -43,6 +51,9 @@ int** getTable();
 
 void printTable(int** const & table);
 
+string getCurrentWorkingDir();
+bool directoryExists(string const & dir);
+
 float s2f(string const & floatstring){
     std::string::size_type sz;     // alias of size_t
     float conv =  std::stof (floatstring,&sz);
@@ -70,7 +81,7 @@ void averageSubTables(csvVector &input, csvVector &output){
             skipFirst = false;
             continue;
         }
-        if (i->size()>0){
+        if (i->size()==6){
             float valueIntesityGPF = s2f(i->at(2));
             float valueIntensityCy3 = s2f(i->at(3));
             float valueDapiArea = s2f(i->at(4));
@@ -286,4 +297,30 @@ void printTable(int** const & table){
         std::cout <<";\n";
     }
 
+}
+
+
+string getCurrentWorkingDir(){
+    char* buffer;
+    string working_directory;
+    if( (buffer=getcwd(nullptr, 0)) == nullptr) {
+        perror("failed to get current directory\n");
+        return "";
+    } else {
+        working_directory = buffer;
+        free(buffer);
+    }
+
+    return working_directory;
+}
+
+bool directoryExists(string const & dir){
+    DIR* dirVar = opendir(dir.c_str());
+    if (dirVar) {
+        /* Directory exists. */
+        closedir(dirVar);
+        return true;
+    } else {
+        return false;
+    }
 }
