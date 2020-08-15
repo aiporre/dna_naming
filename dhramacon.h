@@ -81,7 +81,7 @@ void averageSubTables(csvVector &input, csvVector &output){
             skipFirst = false;
             continue;
         }
-        if (i->size()==6){
+        if (i->size()==6 or i->size()==5){
             float valueIntesityGPF = s2f(i->at(2));
             float valueIntensityCy3 = s2f(i->at(3));
             float valueDapiArea = s2f(i->at(4));
